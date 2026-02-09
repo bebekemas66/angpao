@@ -10,7 +10,7 @@
       "@keyframes fall{to{transform:translateY(110vh) rotate(360deg);opacity:.9}}";
     document.head.appendChild(style);
 
-    const ANGPAO_ICON = "https://i.imgur.com/8PJuI5p.png";
+    const ANGPAO_ICON = "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjv9EJhdvfU_tkn5wl_UD9BB6ND6bs9Hm61zox984Lk5uTY20HXZrmJmLnjA-b_8szcpmRXzqvtLsaJzWeEnfnxtuw1J-WG6-nbZ_LZbWqJNzcn6x4xFgK1mDozu0ShL4l3F20AHrLyjdBUy4yCCUvUoSJDvKnVgaX68pEi_b-0zTRjPDHgBIaY-jJvVMs/w510-h510/ChatGPT%20Image%20Feb%2010,%202026,%2001_15_06%20AM.png";
 
     function spawn() {
       const img = document.createElement("img");
@@ -37,3 +37,4 @@
     start();
   }
 })();
+

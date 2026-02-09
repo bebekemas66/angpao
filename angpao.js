@@ -4,9 +4,9 @@
     const ANGPAO_ICON = "https://bebekemas66.github.io/angpao/angpao.png";
     const AUDIO_URL   = "https://bebekemas66.github.io/angpao/angpao.mp3";
 
-    const AUDIO_VOLUME = 0.25; // 0.0 - 1.0
-    const PER_SECOND   = 6;    // jumlah angpao per detik (naikkan kalau mau lebih rame)
-    const DURATION_MS  = 0;    // 0 = terus. contoh 12000 = berhenti setelah 12 detik
+    const AUDIO_VOLUME = 0.4; // 0.0 - 1.0
+    const PER_SECOND   = 5;    // jumlah angpao per detik (naikkan kalau mau lebih rame)
+    const DURATION_MS  = 35000;    // 0 = terus. contoh 12000 = berhenti setelah 12 detik
 
     // ====== LAYER ANGPAO ======
     const layer = document.createElement("div");
@@ -97,3 +97,4 @@
     start();
   }
 })();
+

@@ -52,9 +52,10 @@ document.addEventListener("touchstart", () => {
     btn.textContent = "🔊";
     btn.setAttribute("aria-label", "Toggle music");
     btn.style.cssText =
-      "position:fixed;right:16px;bottom:16px;z-index:1000000;" +
-      "padding:10px 12px;border-radius:999px;border:none;cursor:pointer;" +
-      "background:rgba(0,0,0,.5);color:#fff;backdrop-filter:blur(6px)";
+  "position:fixed;right:16px;top:50%;transform:translateY(-50%);" +
+  "z-index:1000000;padding:10px 12px;border-radius:999px;border:none;cursor:pointer;" +
+  "background:rgba(0,0,0,.5);color:#fff;backdrop-filter:blur(6px)";
+
     document.body.appendChild(btn);
 
     btn.addEventListener("click", () => {
@@ -104,6 +105,7 @@ document.addEventListener("touchstart", () => {
     start();
   }
 })();
+
 
 
 

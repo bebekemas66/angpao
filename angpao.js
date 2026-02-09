@@ -26,6 +26,13 @@
     audio.loop = true;
     audio.preload = "auto";
     audio.volume = AUDIO_VOLUME;
+    
+// 🔐 Mobile hard-fix: play saat tap pertama (Safari iOS / Chrome Android)
+document.addEventListener("touchstart", () => {
+  if (audio.paused) {
+    audio.play().catch(() => {});
+  }
+}, { once: true });
 
     // coba autoplay, kalau diblok -> play saat interaksi pertama user
     audio.play().catch(() => {
@@ -97,4 +104,5 @@
     start();
   }
 })();
+
 

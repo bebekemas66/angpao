@@ -70,9 +70,10 @@
     btn.style.cssText =
   "position:fixed;right:16px;top:50%;transform:translateY(-50%);" +
   "z-index:1000000;padding:10px 12px;border-radius:999px;border:none;cursor:pointer;" +
-  "background:rgba(255, 193, 7, 0.75);" +   // emas
-  "color:#1a1a1a;" +
-  "box-shadow:0 6px 16px rgba(0,0,0,.25)";
+  "background:rgba(240,240,240,0.8);" +
+  "color:#222;" +
+  "backdrop-filter:blur(6px);" +
+  "box-shadow:0 6px 14px rgba(0,0,0,.25)";
 
 
     document.body.appendChild(btn);
@@ -126,4 +127,5 @@
     start();
   }
 })();
+
 

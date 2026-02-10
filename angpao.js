@@ -73,6 +73,7 @@
   "background:rgba(240,240,240,0.8);" +
   "color:#222;" +
   "backdrop-filter:blur(6px);" +
+  "transition:transform .15s ease, box-shadow .15s ease;" +
   "box-shadow:0 6px 14px rgba(0,0,0,.25)";
 
 
@@ -127,5 +128,6 @@
     start();
   }
 })();
+
 
 

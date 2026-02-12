@@ -12,7 +12,7 @@
     // - after 35s: tetap jalan tapi lebih jarang (ringan & tidak habis)
     const RAMP_DURATION_MS = 35000;
     const SPAWN_FAST_MS = 240;   // awal
-    const SPAWN_SLOW_MS = 950;   // setelah 35 detik (lebih jarang)
+    const SPAWN_SLOW_MS = 850;   // setelah 35 detik (lebih jarang)
 
     // ================= MUSIC =================
     const audio = new Audio(AUDIO_URL);
@@ -136,8 +136,8 @@
   if (sessionStorage.getItem("gm_blessing_toast_cine_v1") === "1") return;
   sessionStorage.setItem("gm_blessing_toast_cine_v1", "1");
 
-  const DELAY_MS = 2000;      // jeda sebelum muncul
-  const LIFE_MS  = 6200;      // total hidup (remove)
+  const DELAY_MS = 2500;      // jeda sebelum muncul
+  const LIFE_MS  = 6800;      // total hidup (remove)
   const ANIM_S   = 5.6;       // durasi animasi CSS (detik)
 
   const st = document.createElement("style");
@@ -345,4 +345,5 @@
     start();
   }
 })();
+
 

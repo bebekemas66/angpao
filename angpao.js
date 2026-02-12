@@ -7,6 +7,7 @@
     const AUDIO_URL = "https://bebekemas66.github.io/angpao/angpao.mp3";
     const AUDIO_VOLUME = 0.35;
 
+    // rain duration
     const EFFECT_DURATION_MS = 35000;
     const SPAWN_EVERY_MS = 240; // lebih besar = lebih ringan
 
@@ -18,10 +19,16 @@
 
     let userPaused = false;
 
-    document.addEventListener("touchstart", () => {
-      if (audio.paused && !userPaused) audio.play().catch(() => {});
-    }, { once: true });
+    // Mobile hard-fix: play saat tap pertama
+    document.addEventListener(
+      "touchstart",
+      () => {
+        if (audio.paused && !userPaused) audio.play().catch(() => {});
+      },
+      { once: true }
+    );
 
+    // Autoplay attempt + fallback to first interaction
     audio.play().catch(() => {
       const resume = () => {
         if (!userPaused) audio.play().catch(() => {});
@@ -34,6 +41,7 @@
       window.addEventListener("keydown", resume, true);
     });
 
+    // Pause when tab hidden, resume when back (unless user muted)
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         if (!audio.paused) audio.pause();
@@ -42,7 +50,7 @@
       }
     });
 
-    // ====== BUTTON (lebih kecil) ======
+    // ====== BUTTON (mute/unmute - tengah kanan) ======
     const btn = document.createElement("button");
     btn.textContent = "🔊";
     btn.setAttribute("aria-label", "Toggle music");
@@ -70,14 +78,13 @@
       }
     });
 
-    // ====== EFFECT LAYER ======
+    // ====== RAIN EFFECT LAYER (angpao + coin) ======
     const layer = document.createElement("div");
     layer.id = "angpao-rain";
     layer.style.cssText =
       "position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:2147483646";
     document.body.appendChild(layer);
 
-    // ====== CSS (anti-conflict: fall pakai TOP, drift pakai TRANSFORM) ======
     const fxStyle = document.createElement("style");
     fxStyle.textContent = `
       @keyframes fallTop {
@@ -133,56 +140,65 @@
     const timer = setInterval(spawn, SPAWN_EVERY_MS);
     setTimeout(() => clearInterval(timer), EFFECT_DURATION_MS);
 
-  // ====== DRAGON TRAIL (PNG VERSION - Subtle) ======
-(function dragonTrail() {
+    // ====== DRAGON TRAIL (PNG) ======
+    (function dragonTrail() {
+      // prevent double-init
+      if (document.getElementById("gm-dragon-trail")) return;
 
-  const DRAGON_IMG = "https://bebekemas66.github.io/angpao/dragon.png";
+      const DRAGON_IMG = "https://bebekemas66.github.io/angpao/dragon.png";
 
-  const style = document.createElement("style");
-  style.textContent = `
-    #gm-dragon-trail{
-      position:fixed;
-      top:10%;
-      left:-40vw;
-      width:60vw;
-      max-width:900px;
-      pointer-events:none;
-      z-index:2147483640;
-      opacity:0;
-      will-change:transform,opacity;
-    }
+      const style = document.createElement("style");
+      style.textContent = `
+        #gm-dragon-trail{
+          position:fixed;
+          top:10%;
+          left:-40vw;
+          width:60vw;
+          max-width:900px;
+          pointer-events:none;
+          z-index:2147483640; /* behind rain */
+          opacity:0;
+          will-change:transform,opacity;
+          mix-blend-mode:screen;
+          filter: drop-shadow(0 0 10px rgba(255,180,0,0.18));
+        }
+        @keyframes gmDragonPass {
+          0%   { opacity:0;   transform:translateX(0) rotate(-5deg); }
+          10%  { opacity:0.40; }
+          50%  { opacity:0.28; }
+          90%  { opacity:0.40; }
+          100% { opacity:0;   transform:translateX(140vw) rotate(-5deg); }
+        }
+      `;
+      document.head.appendChild(style);
 
-    @keyframes gmDragonPass {
-      0%   { opacity:0; transform:translateX(0) rotate(-5deg); }
-      10%  { opacity:0.35; }
-      50%  { opacity:0.25; }
-      90%  { opacity:0.35; }
-      100% { opacity:0; transform:translateX(140vw) rotate(-5deg); }
-    }
-  `;
-  document.head.appendChild(style);
+      const img = document.createElement("img");
+      img.id = "gm-dragon-trail";
+      img.src = DRAGON_IMG;
+      img.alt = "";
+      document.body.appendChild(img);
 
-  const img = document.createElement("img");
-  img.id = "gm-dragon-trail";
-  img.src = DRAGON_IMG;
-  document.body.appendChild(img);
+      function runOnce() {
+        const top = Math.floor(Math.random() * 30) + 5; // 5% - 35%
+        img.style.top = top + "%";
 
-  function runOnce() {
-    const top = Math.floor(Math.random() * 30) + 5; // 5% - 35%
-    img.style.top = top + "%";
+        const dur = (Math.random() * 1.2 + 2.2).toFixed(2); // 2.2 - 3.4s
+        img.style.animation = "none";
+        void img.offsetHeight; // reset animation
+        img.style.animation = `gmDragonPass ${dur}s ease-in-out forwards`;
+      }
 
-    const dur = (Math.random() * 1.2 + 2.2).toFixed(2);
+      setTimeout(runOnce, 6000);
 
-    img.style.animation = "none";
-    void img.offsetHeight;
-    img.style.animation = `gmDragonPass ${dur}s ease-in-out forwards`;
+      setInterval(() => {
+        if (Math.random() < 0.85) runOnce();
+      }, 22000);
+    })();
   }
 
-  setTimeout(runOnce, 6000);
-
-  setInterval(() => {
-    if (Math.random() < 0.85) runOnce();
-  }, 22000);
-
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
 })();
-

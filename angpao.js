@@ -130,103 +130,145 @@
       document.body.appendChild(el);
     })();
 
-    // ================= BLESSING TOAST (1x) =================
-    (function blessingToast() {
-      if (sessionStorage.getItem("gm_blessing_toast_v1") === "1") return;
-      sessionStorage.setItem("gm_blessing_toast_v1", "1");
+    // ================= BLESSING TOAST (cinematic, delay + lebih lama) =================
+(function blessingToastCinematic() {
+  // tampil 1x per tab
+  if (sessionStorage.getItem("gm_blessing_toast_cine_v1") === "1") return;
+  sessionStorage.setItem("gm_blessing_toast_cine_v1", "1");
 
-      const st = document.createElement("style");
-      st.textContent = `
-        #gm-toast{
-          position:fixed;
-          left:50%;
-          top:18px;
-          transform:translateX(-50%);
-          z-index:2147483647;
-          pointer-events:none;
-          opacity:0;
-          animation: gmToastInOut 2.8s ease forwards;
-        }
-        #gm-toast .box{
-          display:flex;
-          align-items:center;
-          gap:10px;
-          padding:12px 14px;
-          border-radius:16px;
-          background:rgba(14,14,14,.58);
-          backdrop-filter: blur(10px);
-          border:1px solid rgba(255,215,120,.28);
-          box-shadow:0 12px 30px rgba(0,0,0,.35);
-        }
-        #gm-toast .dot{
-          width:10px;height:10px;border-radius:999px;
-          background:rgba(255,215,120,.95);
-          box-shadow:0 0 14px rgba(255,215,120,.55);
-          flex:0 0 auto;
-        }
-        #gm-toast .t1{
-          font:800 12px/1.1 system-ui,Segoe UI,Arial;
-          letter-spacing:.25px;
-          color:#fff3d4;
-          margin:0;
-        }
-        #gm-toast .t2{
-          font:900 14px/1.1 system-ui,Segoe UI,Arial;
-          color:#ffd36a;
-          margin:2px 0 0 0;
-        }
-        /* shimmer tipis */
-        #gm-toast .box{
-          position:relative;
-          overflow:hidden;
-        }
-        #gm-toast .box::after{
-          content:"";
-          position:absolute;
-          inset:-40% -60%;
-          background:linear-gradient(115deg,
-            transparent 0%,
-            rgba(255,215,120,0) 40%,
-            rgba(255,215,120,.12) 50%,
-            rgba(255,215,120,0) 60%,
-            transparent 100%);
-          transform: translateX(-120%);
-          animation: gmToastShine 1.3s ease-out .25s forwards;
-        }
+  const DELAY_MS = 2000;      // jeda sebelum muncul
+  const LIFE_MS  = 6200;      // total hidup (remove)
+  const ANIM_S   = 5.6;       // durasi animasi CSS (detik)
 
-        @keyframes gmToastInOut{
-          0%   { opacity:0; transform:translateX(-50%) translateY(-8px) scale(.98); }
-          12%  { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
-          75%  { opacity:1; }
-          100% { opacity:0; transform:translateX(-50%) translateY(-10px) scale(.99); }
-        }
-        @keyframes gmToastShine{
-          to{ transform: translateX(140%); }
-        }
+  const st = document.createElement("style");
+  st.textContent = `
+    #gm-toast{
+      position:fixed;
+      left:50%;
+      top:16px;
+      transform:translateX(-50%);
+      z-index:2147483647;
+      pointer-events:none;
+      opacity:0;
+      animation: gmToastCine ${ANIM_S}s cubic-bezier(.16,1,.2,1) forwards;
+      will-change: transform, opacity, filter;
+    }
 
-        @media (max-width:480px){
-          #gm-toast{ top:12px; }
-          #gm-toast .box{ padding:11px 12px; border-radius:14px; }
-          #gm-toast .t2{ font-size:13px; }
-        }
-      `;
-      document.head.appendChild(st);
+    #gm-toast .box{
+      position:relative;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      padding:14px 16px;
+      border-radius:18px;
+      background:rgba(10,10,10,.58);
+      backdrop-filter: blur(14px);
+      border:1px solid rgba(255,215,120,.32);
+      box-shadow:
+        0 18px 48px rgba(0,0,0,.45),
+        0 0 0 1px rgba(255,215,120,.10) inset;
+      overflow:hidden;
+    }
 
-      const toast = document.createElement("div");
-      toast.id = "gm-toast";
-      toast.innerHTML = `
-        <div class="box">
-          <div class="dot"></div>
-          <div>
-            <p class="t1">Aura Keberuntungan Aktif</p>
-            <p class="t2">+88 Keberuntungan</p>
-          </div>
-        </div>
-      `;
-      document.body.appendChild(toast);
+    /* aura belakang (glow cinematic) */
+    #gm-toast .box::before{
+      content:"";
+      position:absolute;
+      inset:-40% -30%;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(255,80,0,.22), transparent 55%),
+        radial-gradient(circle at 70% 40%, rgba(255,215,120,.22), transparent 60%);
+      filter: blur(10px);
+      opacity:.65;
+      transform: translateY(6px);
+    }
 
-      setTimeout(() => toast.remove(), 3200);
-    })();
+    /* shimmer sweep */
+    #gm-toast .box::after{
+      content:"";
+      position:absolute;
+      inset:-55% -70%;
+      background:linear-gradient(115deg,
+        transparent 0%,
+        rgba(255,215,120,0) 42%,
+        rgba(255,215,120,.18) 50%,
+        rgba(255,215,120,0) 58%,
+        transparent 100%);
+      transform: translateX(-140%);
+      animation: gmToastShine 1.9s ease-out .55s forwards;
+      opacity:.9;
+      filter: blur(.2px);
+    }
+
+    #gm-toast .dot{
+      width:12px;height:12px;border-radius:999px;
+      background:rgba(255,215,120,.95);
+      box-shadow:0 0 18px rgba(255,215,120,.65);
+      flex:0 0 auto;
+      position:relative;
+      z-index:1;
+    }
+
+    #gm-toast .txt{
+      position:relative;
+      z-index:1;
+      display:flex;
+      flex-direction:column;
+      gap:3px;
+    }
+
+    #gm-toast .t1{
+      font:800 13px/1.1 system-ui,Segoe UI,Arial;
+      letter-spacing:.35px;
+      color:#fff3d4;
+      margin:0;
+    }
+
+    #gm-toast .t2{
+      font:900 16px/1.1 system-ui,Segoe UI,Arial;
+      color:#ffd36a;
+      margin:0;
+      letter-spacing:.2px;
+    }
+
+    /* film-like entrance: slide + subtle zoom + focus */
+    @keyframes gmToastCine{
+      0%   { opacity:0; transform:translateX(-50%) translateY(-22px) scale(.92); filter: blur(2px); }
+      14%  { opacity:1; transform:translateX(-50%) translateY(0)    scale(1);   filter: blur(0px); }
+      72%  { opacity:1; transform:translateX(-50%) translateY(0)    scale(1);   }
+      100% { opacity:0; transform:translateX(-50%) translateY(-14px) scale(.98); filter: blur(.6px); }
+    }
+
+    @keyframes gmToastShine{
+      to { transform: translateX(160%); }
+    }
+
+    @media (max-width:480px){
+      #gm-toast{ top:12px; }
+      #gm-toast .box{ padding:12px 14px; border-radius:16px; }
+      #gm-toast .t2{ font-size:15px; }
+    }
+  `;
+  document.head.appendChild(st);
+
+  const toast = document.createElement("div");
+  toast.id = "gm-toast";
+  toast.innerHTML = `
+    <div class="box">
+      <div class="dot"></div>
+      <div class="txt">
+        <p class="t1">Aura Keberuntungan Aktif</p>
+        <p class="t2">+88 Keberuntungan</p>
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), LIFE_MS);
+  }, DELAY_MS);
+})();
+
 
     // ================= RAIN EFFECT (angpao + coin) =================
     const layerId = "gm-rain-layer";
@@ -303,3 +345,4 @@
     start();
   }
 })();
+

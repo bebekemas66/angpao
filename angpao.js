@@ -1,17 +1,17 @@
 (function () {
   function start() {
-    // ====== CONFIG ======
+
+    // ================= CONFIG =================
     const ANGPAO_ICON = "https://bebekemas66.github.io/angpao/angpao.png";
     const COIN_ICON   = "https://bebekemas66.github.io/angpao/coin.png";
+    const DRAGON_IMG  = "https://bebekemas66.github.io/angpao/dragon.png";
+    const AUDIO_URL   = "https://bebekemas66.github.io/angpao/angpao.mp3";
 
-    const AUDIO_URL = "https://bebekemas66.github.io/angpao/angpao.mp3";
     const AUDIO_VOLUME = 0.35;
-
-    // rain duration
     const EFFECT_DURATION_MS = 35000;
-    const SPAWN_EVERY_MS = 240; // lebih besar = lebih ringan
+    const SPAWN_EVERY_MS = 240;
 
-    // ====== MUSIC ======
+    // ================= MUSIC =================
     const audio = new Audio(AUDIO_URL);
     audio.loop = true;
     audio.preload = "auto";
@@ -19,19 +19,13 @@
 
     let userPaused = false;
 
-    // Mobile hard-fix: play saat tap pertama
-    document.addEventListener(
-      "touchstart",
-      () => {
-        if (audio.paused && !userPaused) audio.play().catch(() => {});
-      },
-      { once: true }
-    );
+    document.addEventListener("touchstart", () => {
+      if (audio.paused && !userPaused) audio.play().catch(()=>{});
+    }, { once:true });
 
-    // Autoplay attempt + fallback to first interaction
     audio.play().catch(() => {
       const resume = () => {
-        if (!userPaused) audio.play().catch(() => {});
+        if (!userPaused) audio.play().catch(()=>{});
         window.removeEventListener("click", resume, true);
         window.removeEventListener("touchstart", resume, true);
         window.removeEventListener("keydown", resume, true);
@@ -41,164 +35,147 @@
       window.addEventListener("keydown", resume, true);
     });
 
-    // Pause when tab hidden, resume when back (unless user muted)
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         if (!audio.paused) audio.pause();
       } else {
-        if (!userPaused) audio.play().catch(() => {});
+        if (!userPaused) audio.play().catch(()=>{});
       }
     });
 
-    // ====== BUTTON (mute/unmute - tengah kanan) ======
+    // ================= BUTTON =================
     const btn = document.createElement("button");
     btn.textContent = "🔊";
-    btn.setAttribute("aria-label", "Toggle music");
     btn.style.cssText =
       "position:fixed;right:14px;top:50%;transform:translateY(-50%);" +
-      "z-index:2147483647;" +
-      "padding:10px 12px;font-size:16px;line-height:1;" +
+      "z-index:2147483647;padding:8px 10px;font-size:14px;" +
       "border-radius:999px;border:none;cursor:pointer;" +
       "background:rgba(255,193,7,0.92);color:#1a1a1a;" +
       "outline:2px solid rgba(255,255,255,0.55);" +
-      "box-shadow:0 8px 18px rgba(0,0,0,.35)";
+      "box-shadow:0 6px 14px rgba(0,0,0,.35)";
     document.body.appendChild(btn);
 
     btn.addEventListener("click", () => {
       if (audio.paused) {
-        audio.play().catch(() => {});
-        btn.textContent = "🔊";
-        btn.style.background = "rgba(255,193,7,0.92)";
-        userPaused = false;
+        audio.play().catch(()=>{});
+        btn.textContent="🔊";
+        btn.style.background="rgba(255,193,7,0.92)";
+        userPaused=false;
       } else {
         audio.pause();
-        btn.textContent = "🔇";
-        btn.style.background = "rgba(120,120,120,0.85)";
-        userPaused = true;
+        btn.textContent="🔇";
+        btn.style.background="rgba(120,120,120,0.85)";
+        userPaused=true;
       }
     });
 
-    // ====== RAIN EFFECT LAYER (angpao + coin) ======
+    // ================= RAIN EFFECT =================
     const layer = document.createElement("div");
-    layer.id = "angpao-rain";
     layer.style.cssText =
       "position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:2147483646";
     document.body.appendChild(layer);
 
-    const fxStyle = document.createElement("style");
-    fxStyle.textContent = `
+    const style = document.createElement("style");
+    style.textContent = `
       @keyframes fallTop {
         from { top:-80px; opacity:.95; }
         to   { top:110vh; opacity:.9; }
       }
       @keyframes sway {
-        0%   { transform: translateX(0px) rotate(0deg); }
-        50%  { transform: translateX(var(--dx)) rotate(var(--rot)); }
-        100% { transform: translateX(0px) rotate(calc(var(--rot) * -1)); }
+        0% { transform:translateX(0) rotate(0deg); }
+        50% { transform:translateX(var(--dx)) rotate(var(--rot)); }
+        100% { transform:translateX(0) rotate(calc(var(--rot)*-1)); }
       }
-      #angpao-rain .fx {
+      .fx{
         position:absolute;
-        left: var(--x);
-        top: -80px;
-        width: var(--size);
+        left:var(--x);
+        top:-80px;
+        width:var(--size);
         animation:
           fallTop var(--dur) linear forwards,
           sway var(--sway) ease-in-out infinite;
-        will-change: top, transform;
-        pointer-events:none;
+        will-change:top,transform;
       }
     `;
-    document.head.appendChild(fxStyle);
+    document.head.appendChild(style);
 
     function spawn() {
       const img = document.createElement("img");
-      img.className = "fx";
-      img.src = Math.random() < 0.6 ? ANGPAO_ICON : COIN_ICON;
+      img.className="fx";
+      img.src = Math.random()<0.6 ? ANGPAO_ICON : COIN_ICON;
 
-      const size = (Math.random() * 22 + 24).toFixed(0) + "px";
-      const x    = (Math.random() * 100).toFixed(2) + "vw";
-      const dur  = (Math.random() * 2.8 + 4.2).toFixed(2) + "s";
-      const sway = (Math.random() * 1.4 + 2.0).toFixed(2) + "s";
-      const dx   = (Math.random() * 40 + 18).toFixed(0) + "px";
-      const rot  = (Math.random() * 26 + 10).toFixed(0) + "deg";
-
-      img.style.setProperty("--size", size);
-      img.style.setProperty("--x", x);
-      img.style.setProperty("--dur", dur);
-      img.style.setProperty("--sway", sway);
-      img.style.setProperty("--dx", (Math.random() < 0.5 ? "-" : "") + dx);
-      img.style.setProperty("--rot", (Math.random() < 0.5 ? "-" : "") + rot);
-
-      img.onerror = () => img.remove();
+      img.style.setProperty("--size",(Math.random()*22+24)+"px");
+      img.style.setProperty("--x",(Math.random()*100)+"vw");
+      img.style.setProperty("--dur",(Math.random()*2.8+4.2)+"s");
+      img.style.setProperty("--sway",(Math.random()*1.4+2)+"s");
+      img.style.setProperty("--dx",(Math.random()<0.5?"-":"")+(Math.random()*40+18)+"px");
+      img.style.setProperty("--rot",(Math.random()<0.5?"-":"")+(Math.random()*26+10)+"deg");
 
       layer.appendChild(img);
-
-      const ms = Math.ceil(parseFloat(dur) * 1000) + 700;
-      setTimeout(() => img.remove(), ms);
+      setTimeout(()=>img.remove(),7000);
     }
 
-    const timer = setInterval(spawn, SPAWN_EVERY_MS);
-    setTimeout(() => clearInterval(timer), EFFECT_DURATION_MS);
+    const rainTimer = setInterval(spawn, SPAWN_EVERY_MS);
+    setTimeout(()=>clearInterval(rainTimer), EFFECT_DURATION_MS);
 
-    // ====== DRAGON TRAIL (PNG) ======
-    (function dragonTrail() {
-      // prevent double-init
-      if (document.getElementById("gm-dragon-trail")) return;
+    // ================= DRAGON TRAIL =================
+    (function(){
+      const dragon = document.createElement("img");
+      dragon.src = DRAGON_IMG;
+      dragon.style.cssText =
+        "position:fixed;left:-40vw;width:60vw;max-width:900px;" +
+        "z-index:2147483640;pointer-events:none;opacity:0;" +
+        "mix-blend-mode:screen;filter:drop-shadow(0 0 10px rgba(255,180,0,.2))";
+      document.body.appendChild(dragon);
 
-      const DRAGON_IMG = "https://bebekemas66.github.io/angpao/dragon.png";
+      const dragonStyle = document.createElement("style");
+      dragonStyle.textContent=`
+        @keyframes gmDragonPass{
+          0%{opacity:0;transform:translateX(0) rotate(-5deg)}
+          10%{opacity:.4}
+          50%{opacity:.25}
+          90%{opacity:.4}
+          100%{opacity:0;transform:translateX(140vw) rotate(-5deg)}
+        }`;
+      document.head.appendChild(dragonStyle);
 
-      const style = document.createElement("style");
-      style.textContent = `
-        #gm-dragon-trail{
-          position:fixed;
-          top:10%;
-          left:-40vw;
-          width:60vw;
-          max-width:900px;
-          pointer-events:none;
-          z-index:2147483640; /* behind rain */
-          opacity:0;
-          will-change:transform,opacity;
-          mix-blend-mode:screen;
-          filter: drop-shadow(0 0 10px rgba(255,180,0,0.18));
-        }
-        @keyframes gmDragonPass {
-          0%   { opacity:0;   transform:translateX(0) rotate(-5deg); }
-          10%  { opacity:0.40; }
-          50%  { opacity:0.28; }
-          90%  { opacity:0.40; }
-          100% { opacity:0;   transform:translateX(140vw) rotate(-5deg); }
-        }
-      `;
-      document.head.appendChild(style);
-
-      const img = document.createElement("img");
-      img.id = "gm-dragon-trail";
-      img.src = DRAGON_IMG;
-      img.alt = "";
-      document.body.appendChild(img);
-
-      function runOnce() {
-        const top = Math.floor(Math.random() * 30) + 5; // 5% - 35%
-        img.style.top = top + "%";
-
-        const dur = (Math.random() * 1.2 + 2.2).toFixed(2); // 2.2 - 3.4s
-        img.style.animation = "none";
-        void img.offsetHeight; // reset animation
-        img.style.animation = `gmDragonPass ${dur}s ease-in-out forwards`;
+      function run(){
+        dragon.style.top=(Math.random()*30+5)+"%";
+        dragon.style.animation="none";
+        void dragon.offsetHeight;
+        dragon.style.animation="gmDragonPass 3s ease-in-out forwards";
       }
 
-      setTimeout(runOnce, 6000);
-
-      setInterval(() => {
-        if (Math.random() < 0.85) runOnce();
-      }, 22000);
+      setTimeout(run,6000);
+      setInterval(()=>{if(Math.random()<0.85)run();},22000);
     })();
+
+    // ================= LUCKY AURA =================
+    (function(){
+      const aura=document.createElement("div");
+      aura.style.cssText=
+        "position:fixed;inset:0;pointer-events:none;" +
+        "z-index:2147483635;" +
+        "background:" +
+        "radial-gradient(circle at 50% 0%, rgba(255,0,0,.18), transparent 55%)," +
+        "radial-gradient(circle at 50% 40%, rgba(255,190,0,.12), transparent 65%);" +
+        "animation:gmAuraPulse 10s ease-in-out infinite alternate";
+      document.body.appendChild(aura);
+
+      const auraStyle=document.createElement("style");
+      auraStyle.textContent=`
+        @keyframes gmAuraPulse{
+          0%{opacity:.8}
+          100%{opacity:1}
+        }`;
+      document.head.appendChild(auraStyle);
+    })();
+
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", start);
-  } else {
+  if(document.readyState==="loading"){
+    document.addEventListener("DOMContentLoaded",start);
+  }else{
     start();
   }
 })();

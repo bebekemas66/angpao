@@ -76,6 +76,52 @@
       });
     }
 
+    // ================= GOLD SHINE SWEEP (ringan & premium) =================
+    (function goldSweep() {
+      if (document.getElementById("gm-gold-sweep")) return;
+
+      const style = document.createElement("style");
+      style.textContent = `
+        #gm-gold-sweep{
+          position:fixed;
+          inset:0;
+          pointer-events:none;
+          z-index:2147483645; /* di bawah rain (3646) */
+          overflow:hidden;
+          opacity:.9;
+        }
+        #gm-gold-sweep::before{
+          content:"";
+          position:absolute;
+          top:-20%;
+          left:-120%;
+          width:60%;
+          height:140%;
+          background:linear-gradient(115deg,
+            transparent 0%,
+            rgba(255,215,120,0) 35%,
+            rgba(255,215,120,.14) 50%,
+            rgba(255,215,120,0) 65%,
+            transparent 100%);
+          transform:skewX(-12deg);
+          filter:blur(0.3px);
+          animation: gmGoldSweep 18s ease-in-out infinite;
+        }
+        @keyframes gmGoldSweep{
+          0%   { left:-120%; opacity:0; }
+          10%  { opacity:1; }
+          35%  { left:140%; opacity:1; }
+          36%  { opacity:0; }
+          100% { left:140%; opacity:0; }
+        }
+      `;
+      document.head.appendChild(style);
+
+      const el = document.createElement("div");
+      el.id = "gm-gold-sweep";
+      document.body.appendChild(el);
+    })();
+
     // ================= RAIN EFFECT (angpao + coin) =================
     const layerId = "gm-rain-layer";
     let layer = document.getElementById(layerId);

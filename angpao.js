@@ -7,8 +7,12 @@
     const AUDIO_URL   = "https://bebekemas66.github.io/angpao/angpao.mp3";
     const AUDIO_VOLUME = 0.35;
 
-    const EFFECT_DURATION_MS = 35000; // durasi efek jatuh
-    const SPAWN_EVERY_MS = 240;       // lebih besar = lebih ringan
+    // Rain intensity:
+    // - first 35s: lebih rame
+    // - after 35s: tetap jalan tapi lebih jarang (ringan & tidak habis)
+    const RAMP_DURATION_MS = 35000;
+    const SPAWN_FAST_MS = 240;   // awal
+    const SPAWN_SLOW_MS = 950;   // setelah 35 detik (lebih jarang)
 
     // ================= MUSIC =================
     const audio = new Audio(AUDIO_URL);
@@ -19,9 +23,13 @@
     let userPaused = false;
 
     // Mobile: play saat tap pertama
-    document.addEventListener("touchstart", () => {
-      if (audio.paused && !userPaused) audio.play().catch(() => {});
-    }, { once: true });
+    document.addEventListener(
+      "touchstart",
+      () => {
+        if (audio.paused && !userPaused) audio.play().catch(() => {});
+      },
+      { once: true }
+    );
 
     // Autoplay attempt + fallback interaksi pertama
     audio.play().catch(() => {
@@ -80,13 +88,13 @@
     (function goldSweep() {
       if (document.getElementById("gm-gold-sweep")) return;
 
-      const style = document.createElement("style");
-      style.textContent = `
+      const st = document.createElement("style");
+      st.textContent = `
         #gm-gold-sweep{
           position:fixed;
           inset:0;
           pointer-events:none;
-          z-index:2147483645; /* di bawah rain (3646) */
+          z-index:2147483645; /* di bawah rain */
           overflow:hidden;
           opacity:.9;
         }
@@ -115,11 +123,109 @@
           100% { left:140%; opacity:0; }
         }
       `;
-      document.head.appendChild(style);
+      document.head.appendChild(st);
 
       const el = document.createElement("div");
       el.id = "gm-gold-sweep";
       document.body.appendChild(el);
+    })();
+
+    // ================= BLESSING TOAST (1x) =================
+    (function blessingToast() {
+      if (sessionStorage.getItem("gm_blessing_toast_v1") === "1") return;
+      sessionStorage.setItem("gm_blessing_toast_v1", "1");
+
+      const st = document.createElement("style");
+      st.textContent = `
+        #gm-toast{
+          position:fixed;
+          left:50%;
+          top:18px;
+          transform:translateX(-50%);
+          z-index:2147483647;
+          pointer-events:none;
+          opacity:0;
+          animation: gmToastInOut 2.8s ease forwards;
+        }
+        #gm-toast .box{
+          display:flex;
+          align-items:center;
+          gap:10px;
+          padding:12px 14px;
+          border-radius:16px;
+          background:rgba(14,14,14,.58);
+          backdrop-filter: blur(10px);
+          border:1px solid rgba(255,215,120,.28);
+          box-shadow:0 12px 30px rgba(0,0,0,.35);
+        }
+        #gm-toast .dot{
+          width:10px;height:10px;border-radius:999px;
+          background:rgba(255,215,120,.95);
+          box-shadow:0 0 14px rgba(255,215,120,.55);
+          flex:0 0 auto;
+        }
+        #gm-toast .t1{
+          font:800 12px/1.1 system-ui,Segoe UI,Arial;
+          letter-spacing:.25px;
+          color:#fff3d4;
+          margin:0;
+        }
+        #gm-toast .t2{
+          font:900 14px/1.1 system-ui,Segoe UI,Arial;
+          color:#ffd36a;
+          margin:2px 0 0 0;
+        }
+        /* shimmer tipis */
+        #gm-toast .box{
+          position:relative;
+          overflow:hidden;
+        }
+        #gm-toast .box::after{
+          content:"";
+          position:absolute;
+          inset:-40% -60%;
+          background:linear-gradient(115deg,
+            transparent 0%,
+            rgba(255,215,120,0) 40%,
+            rgba(255,215,120,.12) 50%,
+            rgba(255,215,120,0) 60%,
+            transparent 100%);
+          transform: translateX(-120%);
+          animation: gmToastShine 1.3s ease-out .25s forwards;
+        }
+
+        @keyframes gmToastInOut{
+          0%   { opacity:0; transform:translateX(-50%) translateY(-8px) scale(.98); }
+          12%  { opacity:1; transform:translateX(-50%) translateY(0) scale(1); }
+          75%  { opacity:1; }
+          100% { opacity:0; transform:translateX(-50%) translateY(-10px) scale(.99); }
+        }
+        @keyframes gmToastShine{
+          to{ transform: translateX(140%); }
+        }
+
+        @media (max-width:480px){
+          #gm-toast{ top:12px; }
+          #gm-toast .box{ padding:11px 12px; border-radius:14px; }
+          #gm-toast .t2{ font-size:13px; }
+        }
+      `;
+      document.head.appendChild(st);
+
+      const toast = document.createElement("div");
+      toast.id = "gm-toast";
+      toast.innerHTML = `
+        <div class="box">
+          <div class="dot"></div>
+          <div>
+            <p class="t1">Aura Keberuntungan Aktif</p>
+            <p class="t2">+88 Keberuntungan</p>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(toast);
+
+      setTimeout(() => toast.remove(), 3200);
     })();
 
     // ================= RAIN EFFECT (angpao + coin) =================
@@ -176,11 +282,19 @@
       img.onerror = () => img.remove();
       layer.appendChild(img);
 
-      setTimeout(() => img.remove(), 8000);
+      // remove setelah selesai jatuh
+      const ms = 8200;
+      setTimeout(() => img.remove(), ms);
     }
 
-    const rainTimer = setInterval(spawn, SPAWN_EVERY_MS);
-    setTimeout(() => clearInterval(rainTimer), EFFECT_DURATION_MS);
+    // Phase 1: rame 35 detik
+    let rainTimer = setInterval(spawn, SPAWN_FAST_MS);
+
+    // Setelah 35 detik: tetap jalan, tapi jarang (tidak habis)
+    setTimeout(() => {
+      clearInterval(rainTimer);
+      rainTimer = setInterval(spawn, SPAWN_SLOW_MS);
+    }, RAMP_DURATION_MS);
   }
 
   if (document.readyState === "loading") {

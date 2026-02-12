@@ -77,36 +77,43 @@
       "position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:2147483646";
     document.body.appendChild(layer);
 
-    // ====== CSS (drift pakai CSS biar ringan) ======
-    const style = document.createElement("style");
-    style.textContent = `
-      @keyframes fall { to { transform: translateY(110vh); opacity: .9; } }
+    // ====== CSS (anti-conflict: fall pakai TOP, drift pakai TRANSFORM) ======
+    const fxStyle = document.createElement("style");
+    fxStyle.textContent = `
+      @keyframes fallTop {
+        from { top:-80px; opacity:.95; }
+        to   { top:110vh; opacity:.9; }
+      }
       @keyframes sway {
         0%   { transform: translateX(0px) rotate(0deg); }
         50%  { transform: translateX(var(--dx)) rotate(var(--rot)); }
         100% { transform: translateX(0px) rotate(calc(var(--rot) * -1)); }
       }
-      #angpao-rain .fx{
-        position:absolute; top:-80px;
-        left:var(--x); width:var(--size);
-        opacity:.95;
-        animation: fall var(--dur) linear forwards, sway var(--sway) ease-in-out infinite;
-        will-change: transform;
+      #angpao-rain .fx {
+        position:absolute;
+        left: var(--x);
+        top: -80px;
+        width: var(--size);
+        animation:
+          fallTop var(--dur) linear forwards,
+          sway var(--sway) ease-in-out infinite;
+        will-change: top, transform;
+        pointer-events:none;
       }
     `;
-    document.head.appendChild(style);
+    document.head.appendChild(fxStyle);
 
     function spawn() {
       const img = document.createElement("img");
-      img.src = Math.random() < 0.6 ? ANGPAO_ICON : COIN_ICON;
       img.className = "fx";
+      img.src = Math.random() < 0.6 ? ANGPAO_ICON : COIN_ICON;
 
-      const size = (Math.random() * 22 + 24).toFixed(0) + "px";  // 24-46
+      const size = (Math.random() * 22 + 24).toFixed(0) + "px";
       const x    = (Math.random() * 100).toFixed(2) + "vw";
-      const dur  = (Math.random() * 2.8 + 4.2).toFixed(2) + "s"; // 4.2-7.0
-      const sway = (Math.random() * 1.4 + 2.0).toFixed(2) + "s"; // 2.0-3.4
-      const dx   = (Math.random() * 40 + 18).toFixed(0) + "px";  // 18-58
-      const rot  = (Math.random() * 26 + 10).toFixed(0) + "deg"; // 10-36
+      const dur  = (Math.random() * 2.8 + 4.2).toFixed(2) + "s";
+      const sway = (Math.random() * 1.4 + 2.0).toFixed(2) + "s";
+      const dx   = (Math.random() * 40 + 18).toFixed(0) + "px";
+      const rot  = (Math.random() * 26 + 10).toFixed(0) + "deg";
 
       img.style.setProperty("--size", size);
       img.style.setProperty("--x", x);
@@ -115,12 +122,11 @@
       img.style.setProperty("--dx", (Math.random() < 0.5 ? "-" : "") + dx);
       img.style.setProperty("--rot", (Math.random() < 0.5 ? "-" : "") + rot);
 
-      // DEBUG: kalau mau lihat kalau URL error, jangan remove di onerror dulu
-      // img.onerror = () => img.remove();
+      img.onerror = () => img.remove();
 
       layer.appendChild(img);
 
-      const ms = Math.ceil(parseFloat(dur) * 1000) + 600;
+      const ms = Math.ceil(parseFloat(dur) * 1000) + 700;
       setTimeout(() => img.remove(), ms);
     }
 

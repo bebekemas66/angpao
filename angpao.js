@@ -132,11 +132,57 @@
 
     const timer = setInterval(spawn, SPAWN_EVERY_MS);
     setTimeout(() => clearInterval(timer), EFFECT_DURATION_MS);
+
+  // ====== DRAGON TRAIL (PNG VERSION - Subtle) ======
+(function dragonTrail() {
+
+  const DRAGON_IMG = "https://bebekemas66.github.io/angpao/dragon.png";
+
+  const style = document.createElement("style");
+  style.textContent = `
+    #gm-dragon-trail{
+      position:fixed;
+      top:10%;
+      left:-40vw;
+      width:60vw;
+      max-width:900px;
+      pointer-events:none;
+      z-index:2147483640;
+      opacity:0;
+      will-change:transform,opacity;
+    }
+
+    @keyframes gmDragonPass {
+      0%   { opacity:0; transform:translateX(0) rotate(-5deg); }
+      10%  { opacity:0.35; }
+      50%  { opacity:0.25; }
+      90%  { opacity:0.35; }
+      100% { opacity:0; transform:translateX(140vw) rotate(-5deg); }
+    }
+  `;
+  document.head.appendChild(style);
+
+  const img = document.createElement("img");
+  img.id = "gm-dragon-trail";
+  img.src = DRAGON_IMG;
+  document.body.appendChild(img);
+
+  function runOnce() {
+    const top = Math.floor(Math.random() * 30) + 5; // 5% - 35%
+    img.style.top = top + "%";
+
+    const dur = (Math.random() * 1.2 + 2.2).toFixed(2);
+
+    img.style.animation = "none";
+    void img.offsetHeight;
+    img.style.animation = `gmDragonPass ${dur}s ease-in-out forwards`;
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", start);
-  } else {
-    start();
-  }
+  setTimeout(runOnce, 6000);
+
+  setInterval(() => {
+    if (Math.random() < 0.85) runOnce();
+  }, 22000);
+
 })();
+

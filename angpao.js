@@ -3,12 +3,12 @@
     // ================= CONFIG =================
     const ANGPAO_ICON = "https://bebekemas66.github.io/angpao/angpao.png";
     const COIN_ICON   = "https://bebekemas66.github.io/angpao/coin.png";
-    const DRAGON_IMG  = "https://bebekemas66.github.io/angpao/dragon.png";
-    const AUDIO_URL   = "https://bebekemas66.github.io/angpao/angpao.mp3";
 
+    const AUDIO_URL   = "https://bebekemas66.github.io/angpao/angpao.mp3";
     const AUDIO_VOLUME = 0.35;
-    const EFFECT_DURATION_MS = 35000;
-    const SPAWN_EVERY_MS = 240;
+
+    const EFFECT_DURATION_MS = 35000; // durasi efek jatuh
+    const SPAWN_EVERY_MS = 240;       // lebih besar = lebih ringan
 
     // ================= MUSIC =================
     const audio = new Audio(AUDIO_URL);
@@ -18,16 +18,12 @@
 
     let userPaused = false;
 
-    // Mobile hard-fix: play saat tap pertama
-    document.addEventListener(
-      "touchstart",
-      () => {
-        if (audio.paused && !userPaused) audio.play().catch(() => {});
-      },
-      { once: true }
-    );
+    // Mobile: play saat tap pertama
+    document.addEventListener("touchstart", () => {
+      if (audio.paused && !userPaused) audio.play().catch(() => {});
+    }, { once: true });
 
-    // Autoplay attempt + fallback to first interaction
+    // Autoplay attempt + fallback interaksi pertama
     audio.play().catch(() => {
       const resume = () => {
         if (!userPaused) audio.play().catch(() => {});
@@ -40,7 +36,7 @@
       window.addEventListener("keydown", resume, true);
     });
 
-    // Pause when tab hidden, resume when back (unless user muted)
+    // Pause saat tab hidden, resume saat balik (kecuali user mute)
     document.addEventListener("visibilitychange", () => {
       if (document.hidden) {
         if (!audio.paused) audio.pause();
@@ -49,7 +45,7 @@
       }
     });
 
-    // ================= BUTTON (mute/unmute - tengah kanan) =================
+    // ================= BUTTON (mute/unmute) =================
     if (!document.getElementById("gm-audio-btn")) {
       const btn = document.createElement("button");
       btn.id = "gm-audio-btn";
@@ -134,139 +130,11 @@
       img.onerror = () => img.remove();
       layer.appendChild(img);
 
-      const ms = 8000;
-      setTimeout(() => img.remove(), ms);
+      setTimeout(() => img.remove(), 8000);
     }
 
     const rainTimer = setInterval(spawn, SPAWN_EVERY_MS);
     setTimeout(() => clearInterval(rainTimer), EFFECT_DURATION_MS);
-
-    // ================= DRAGON TRAIL (PNG) =================
-    (function dragonTrail() {
-      if (document.getElementById("gm-dragon-trail")) return;
-
-      const dragonStyle = document.createElement("style");
-      dragonStyle.textContent = `
-        #gm-dragon-trail{
-          position:fixed;
-          left:-40vw;
-          width:60vw;
-          max-width:900px;
-          pointer-events:none;
-          z-index:2147483640;
-          opacity:0;
-          will-change:transform,opacity;
-          mix-blend-mode:screen;
-          filter: drop-shadow(0 0 10px rgba(255,180,0,.18));
-        }
-        @keyframes gmDragonPass {
-          0%   { opacity:0;   transform:translateX(0) rotate(-5deg); }
-          10%  { opacity:0.40; }
-          50%  { opacity:0.25; }
-          90%  { opacity:0.40; }
-          100% { opacity:0;   transform:translateX(140vw) rotate(-5deg); }
-        }
-      `;
-      document.head.appendChild(dragonStyle);
-
-      const img = document.createElement("img");
-      img.id = "gm-dragon-trail";
-      img.src = DRAGON_IMG;
-      img.alt = "";
-      document.body.appendChild(img);
-
-      function runOnce() {
-        img.style.top = (Math.floor(Math.random() * 30) + 5) + "%"; // 5-35%
-        const dur = (Math.random() * 1.2 + 2.2).toFixed(2); // 2.2-3.4s
-        img.style.animation = "none";
-        void img.offsetHeight;
-        img.style.animation = `gmDragonPass ${dur}s ease-in-out forwards`;
-      }
-
-      setTimeout(runOnce, 6000);
-      setInterval(() => { if (Math.random() < 0.85) runOnce(); }, 22000);
-    })();
-
-    // ================= FIREWORKS on LOGIN SUCCESS (AJAX, no redirect) =================
-    (function loginFireworks() {
-      const ONCE_KEY = "gm_login_fireworks_done_v1";
-      if (sessionStorage.getItem(ONCE_KEY) === "1") return;
-
-      function loadConfetti(cb) {
-        if (window.confetti) return cb();
-        const s = document.createElement("script");
-        s.src = "https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js";
-        s.async = true;
-        s.onload = cb;
-        document.head.appendChild(s);
-      }
-
-      function boom() {
-        if (!window.confetti) return;
-        sessionStorage.setItem(ONCE_KEY, "1");
-
-        const duration = 2200;
-        const end = Date.now() + duration;
-
-        (function frame() {
-          window.confetti({
-            particleCount: 10,
-            startVelocity: 34,
-            spread: 70,
-            ticks: 190,
-            origin: { x: Math.random() * 0.6 + 0.2, y: 0.7 },
-          });
-          window.confetti({
-            particleCount: 8,
-            startVelocity: 28,
-            spread: 60,
-            ticks: 170,
-            origin: { x: Math.random() * 0.6 + 0.2, y: 0.45 },
-          });
-
-          if (Date.now() < end) requestAnimationFrame(frame);
-        })();
-      }
-
-      // Heuristic: ada "logout/keluar" dan tidak ada "masuk/login"
-      // Kalau UI kamu beda, edit keyword ini
-      const LOGOUT_KEYWORDS = ["logout", "keluar", "log out", "sign out"];
-      const LOGIN_KEYWORDS  = ["masuk", "login", "sign in"];
-
-      function pageText() {
-        return (document.body?.innerText || "").toLowerCase();
-      }
-      function isLoggedInHeuristic() {
-        const t = pageText();
-        const hasLogout = LOGOUT_KEYWORDS.some(k => t.includes(k));
-        const hasLogin  = LOGIN_KEYWORDS.some(k => t.includes(k));
-        return hasLogout && !hasLogin;
-      }
-
-      let fired = false;
-      const obs = new MutationObserver(() => {
-        if (fired) return;
-        if (isLoggedInHeuristic()) {
-          fired = true;
-          obs.disconnect();
-          loadConfetti(boom);
-        }
-      });
-      obs.observe(document.documentElement, { childList: true, subtree: true, attributes: true });
-
-      // fallback polling 10 detik pertama
-      const startAt = Date.now();
-      const poll = setInterval(() => {
-        if (fired) return clearInterval(poll);
-        if (Date.now() - startAt > 10000) return clearInterval(poll);
-        if (isLoggedInHeuristic()) {
-          fired = true;
-          obs.disconnect();
-          clearInterval(poll);
-          loadConfetti(boom);
-        }
-      }, 500);
-    })();
   }
 
   if (document.readyState === "loading") {

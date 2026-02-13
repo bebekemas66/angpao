@@ -4,15 +4,15 @@
     const ANGPAO_ICON = "https://bebekemas66.github.io/angpao/angpao.png";
     const COIN_ICON   = "https://bebekemas66.github.io/angpao/coin.png";
 
-    const AUDIO_URL   = "https://bebekemas66.github.io/angpao/angpao.mp3";
+    const AUDIO_URL    = "https://bebekemas66.github.io/angpao/angpao.mp3";
     const AUDIO_VOLUME = 0.35;
 
     // Rain intensity:
     // - first 35s: lebih rame
-    // - after 35s: tetap jalan tapi lebih jarang (ringan & tidak habis)
+    // - after 35s: tetap jalan tapi lebih jarang (tidak habis)
     const RAMP_DURATION_MS = 35000;
     const SPAWN_FAST_MS = 240;   // awal
-    const SPAWN_SLOW_MS = 850;   // setelah 35 detik (lebih jarang)
+    const SPAWN_SLOW_MS = 750;   // setelah 35 detik
 
     // ================= MUSIC =================
     const audio = new Audio(AUDIO_URL);
@@ -130,145 +130,147 @@
       document.body.appendChild(el);
     })();
 
-    // ================= BLESSING TOAST (cinematic, delay + lebih lama) =================
-(function blessingToastCinematic() {
-  // tampil 1x per tab
-  if (sessionStorage.getItem("gm_blessing_toast_cine_v1") === "1") return;
-  sessionStorage.setItem("gm_blessing_toast_cine_v1", "1");
+    // ================= BLESSING TOAST (cinematic + angka random >= 75) =================
+    (function blessingToastCinematic() {
+      // tampil 1x per tab
+      if (sessionStorage.getItem("gm_blessing_toast_cine_v2") === "1") return;
+      sessionStorage.setItem("gm_blessing_toast_cine_v2", "1");
 
-  const DELAY_MS = 2500;      // jeda sebelum muncul
-  const LIFE_MS  = 6800;      // total hidup (remove)
-  const ANIM_S   = 5.6;       // durasi animasi CSS (detik)
+      const DELAY_MS = 2500;      // jeda sebelum muncul
+      const LIFE_MS  = 6800;      // total hidup (remove)
+      const ANIM_S   = 5.6;       // durasi animasi CSS (detik)
 
-  const st = document.createElement("style");
-  st.textContent = `
-    #gm-toast{
-      position:fixed;
-      left:50%;
-      top:16px;
-      transform:translateX(-50%);
-      z-index:2147483647;
-      pointer-events:none;
-      opacity:0;
-      animation: gmToastCine ${ANIM_S}s cubic-bezier(.16,1,.2,1) forwards;
-      will-change: transform, opacity, filter;
-    }
+      const st = document.createElement("style");
+      st.textContent = `
+        #gm-toast{
+          position:fixed;
+          left:50%;
+          top:16px;
+          transform:translateX(-50%);
+          z-index:2147483647;
+          pointer-events:none;
+          opacity:0;
+          animation: gmToastCine ${ANIM_S}s cubic-bezier(.16,1,.2,1) forwards;
+          will-change: transform, opacity, filter;
+        }
 
-    #gm-toast .box{
-      position:relative;
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding:14px 16px;
-      border-radius:18px;
-      background:rgba(10,10,10,.58);
-      backdrop-filter: blur(14px);
-      border:1px solid rgba(255,215,120,.32);
-      box-shadow:
-        0 18px 48px rgba(0,0,0,.45),
-        0 0 0 1px rgba(255,215,120,.10) inset;
-      overflow:hidden;
-    }
+        #gm-toast .box{
+          position:relative;
+          display:flex;
+          align-items:center;
+          gap:12px;
+          padding:14px 16px;
+          border-radius:18px;
+          background:rgba(10,10,10,.58);
+          backdrop-filter: blur(14px);
+          border:1px solid rgba(255,215,120,.32);
+          box-shadow:
+            0 18px 48px rgba(0,0,0,.45),
+            0 0 0 1px rgba(255,215,120,.10) inset;
+          overflow:hidden;
+        }
 
-    /* aura belakang (glow cinematic) */
-    #gm-toast .box::before{
-      content:"";
-      position:absolute;
-      inset:-40% -30%;
-      background:
-        radial-gradient(circle at 20% 50%, rgba(255,80,0,.22), transparent 55%),
-        radial-gradient(circle at 70% 40%, rgba(255,215,120,.22), transparent 60%);
-      filter: blur(10px);
-      opacity:.65;
-      transform: translateY(6px);
-    }
+        /* aura belakang (glow cinematic) */
+        #gm-toast .box::before{
+          content:"";
+          position:absolute;
+          inset:-40% -30%;
+          background:
+            radial-gradient(circle at 20% 50%, rgba(255,80,0,.22), transparent 55%),
+            radial-gradient(circle at 70% 40%, rgba(255,215,120,.22), transparent 60%);
+          filter: blur(10px);
+          opacity:.65;
+          transform: translateY(6px);
+        }
 
-    /* shimmer sweep */
-    #gm-toast .box::after{
-      content:"";
-      position:absolute;
-      inset:-55% -70%;
-      background:linear-gradient(115deg,
-        transparent 0%,
-        rgba(255,215,120,0) 42%,
-        rgba(255,215,120,.18) 50%,
-        rgba(255,215,120,0) 58%,
-        transparent 100%);
-      transform: translateX(-140%);
-      animation: gmToastShine 1.9s ease-out .55s forwards;
-      opacity:.9;
-      filter: blur(.2px);
-    }
+        /* shimmer sweep */
+        #gm-toast .box::after{
+          content:"";
+          position:absolute;
+          inset:-55% -70%;
+          background:linear-gradient(115deg,
+            transparent 0%,
+            rgba(255,215,120,0) 42%,
+            rgba(255,215,120,.18) 50%,
+            rgba(255,215,120,0) 58%,
+            transparent 100%);
+          transform: translateX(-140%);
+          animation: gmToastShine 1.9s ease-out .55s forwards;
+          opacity:.9;
+          filter: blur(.2px);
+        }
 
-    #gm-toast .dot{
-      width:12px;height:12px;border-radius:999px;
-      background:rgba(255,215,120,.95);
-      box-shadow:0 0 18px rgba(255,215,120,.65);
-      flex:0 0 auto;
-      position:relative;
-      z-index:1;
-    }
+        #gm-toast .dot{
+          width:12px;height:12px;border-radius:999px;
+          background:rgba(255,215,120,.95);
+          box-shadow:0 0 18px rgba(255,215,120,.65);
+          flex:0 0 auto;
+          position:relative;
+          z-index:1;
+        }
 
-    #gm-toast .txt{
-      position:relative;
-      z-index:1;
-      display:flex;
-      flex-direction:column;
-      gap:3px;
-    }
+        #gm-toast .txt{
+          position:relative;
+          z-index:1;
+          display:flex;
+          flex-direction:column;
+          gap:3px;
+        }
 
-    #gm-toast .t1{
-      font:800 13px/1.1 system-ui,Segoe UI,Arial;
-      letter-spacing:.35px;
-      color:#fff3d4;
-      margin:0;
-    }
+        #gm-toast .t1{
+          font:800 13px/1.1 system-ui,Segoe UI,Arial;
+          letter-spacing:.35px;
+          color:#fff3d4;
+          margin:0;
+        }
 
-    #gm-toast .t2{
-      font:900 16px/1.1 system-ui,Segoe UI,Arial;
-      color:#ffd36a;
-      margin:0;
-      letter-spacing:.2px;
-    }
+        #gm-toast .t2{
+          font:900 16px/1.1 system-ui,Segoe UI,Arial;
+          color:#ffd36a;
+          margin:0;
+          letter-spacing:.2px;
+        }
 
-    /* film-like entrance: slide + subtle zoom + focus */
-    @keyframes gmToastCine{
-      0%   { opacity:0; transform:translateX(-50%) translateY(-22px) scale(.92); filter: blur(2px); }
-      14%  { opacity:1; transform:translateX(-50%) translateY(0)    scale(1);   filter: blur(0px); }
-      72%  { opacity:1; transform:translateX(-50%) translateY(0)    scale(1);   }
-      100% { opacity:0; transform:translateX(-50%) translateY(-14px) scale(.98); filter: blur(.6px); }
-    }
+        /* film-like entrance: slide + subtle zoom + focus */
+        @keyframes gmToastCine{
+          0%   { opacity:0; transform:translateX(-50%) translateY(-22px) scale(.92); filter: blur(2px); }
+          14%  { opacity:1; transform:translateX(-50%) translateY(0)    scale(1);   filter: blur(0px); }
+          72%  { opacity:1; transform:translateX(-50%) translateY(0)    scale(1);   }
+          100% { opacity:0; transform:translateX(-50%) translateY(-14px) scale(.98); filter: blur(.6px); }
+        }
 
-    @keyframes gmToastShine{
-      to { transform: translateX(160%); }
-    }
+        @keyframes gmToastShine{
+          to { transform: translateX(160%); }
+        }
 
-    @media (max-width:480px){
-      #gm-toast{ top:12px; }
-      #gm-toast .box{ padding:12px 14px; border-radius:16px; }
-      #gm-toast .t2{ font-size:15px; }
-    }
-  `;
-  document.head.appendChild(st);
+        @media (max-width:480px){
+          #gm-toast{ top:12px; }
+          #gm-toast .box{ padding:12px 14px; border-radius:16px; }
+          #gm-toast .t2{ font-size:15px; }
+        }
+      `;
+      document.head.appendChild(st);
 
-  const toast = document.createElement("div");
-  toast.id = "gm-toast";
-  toast.innerHTML = `
-    <div class="box">
-      <div class="dot"></div>
-      <div class="txt">
-        <p class="t1">Aura Keberuntungan Aktif</p>
-        <p class="t2">+88 Keberuntungan</p>
-      </div>
-    </div>
-  `;
+      // angka random 75 - 99 (selalu >= 75)
+      const lucky = Math.floor(Math.random() * (188 - 75 + 1)) + 75;
 
-  setTimeout(() => {
-    document.body.appendChild(toast);
-    setTimeout(() => toast.remove(), LIFE_MS);
-  }, DELAY_MS);
-})();
+      const toast = document.createElement("div");
+      toast.id = "gm-toast";
+      toast.innerHTML = `
+        <div class="box">
+          <div class="dot"></div>
+          <div class="txt">
+            <p class="t1">Aura Keberuntungan Aktif</p>
+            <p class="t2">+${lucky} Keberuntungan</p>
+          </div>
+        </div>
+      `;
 
+      setTimeout(() => {
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), LIFE_MS);
+      }, DELAY_MS);
+    })();
 
     // ================= RAIN EFFECT (angpao + coin) =================
     const layerId = "gm-rain-layer";
@@ -285,24 +287,19 @@
       const style = document.createElement("style");
       style.id = "gm-rain-style";
       style.textContent = `
-        @keyframes fallTop {
-          from { top:-80px; opacity:.95; }
-          to   { top:110vh; opacity:.9; }
-        }
+        @keyframes fallTop { from{top:-80px;opacity:.95} to{top:110vh;opacity:.9} }
         @keyframes sway {
-          0% { transform:translateX(0) rotate(0deg); }
-          50% { transform:translateX(var(--dx)) rotate(var(--rot)); }
-          100% { transform:translateX(0) rotate(calc(var(--rot)*-1)); }
+          0%{transform:translateX(0) rotate(0deg)}
+          50%{transform:translateX(var(--dx)) rotate(var(--rot))}
+          100%{transform:translateX(0) rotate(calc(var(--rot)*-1))}
         }
         #${layerId} .fx{
           position:absolute;
           left:var(--x);
           top:-80px;
           width:var(--size);
-          animation:
-            fallTop var(--dur) linear forwards,
-            sway var(--sway) ease-in-out infinite;
-          will-change:top,transform;
+          animation: fallTop var(--dur) linear forwards, sway var(--sway) ease-in-out infinite;
+          will-change: top, transform;
           pointer-events:none;
         }
       `;
@@ -314,19 +311,17 @@
       img.className = "fx";
       img.src = Math.random() < 0.6 ? ANGPAO_ICON : COIN_ICON;
 
-      img.style.setProperty("--size", (Math.random() * 22 + 24).toFixed(0) + "px"); // 24-46
+      img.style.setProperty("--size", (Math.random() * 22 + 24).toFixed(0) + "px");
       img.style.setProperty("--x", (Math.random() * 100).toFixed(2) + "vw");
-      img.style.setProperty("--dur", (Math.random() * 2.8 + 4.2).toFixed(2) + "s");  // 4.2-7.0
-      img.style.setProperty("--sway", (Math.random() * 1.4 + 2.0).toFixed(2) + "s"); // 2.0-3.4
+      img.style.setProperty("--dur", (Math.random() * 2.8 + 4.2).toFixed(2) + "s");
+      img.style.setProperty("--sway", (Math.random() * 1.4 + 2.0).toFixed(2) + "s");
       img.style.setProperty("--dx", (Math.random() < 0.5 ? "-" : "") + (Math.random() * 40 + 18).toFixed(0) + "px");
       img.style.setProperty("--rot", (Math.random() < 0.5 ? "-" : "") + (Math.random() * 26 + 10).toFixed(0) + "deg");
 
       img.onerror = () => img.remove();
       layer.appendChild(img);
 
-      // remove setelah selesai jatuh
-      const ms = 8200;
-      setTimeout(() => img.remove(), ms);
+      setTimeout(() => img.remove(), 8200);
     }
 
     // Phase 1: rame 35 detik
@@ -345,5 +340,3 @@
     start();
   }
 })();
-
-
